@@ -3,7 +3,7 @@
 import copy
 
 
-def gcd(a, b):
+def gcd(a: int, b: int) -> int:
     """
     返回 a、b 两数的最大公约数
     """
@@ -12,7 +12,7 @@ def gcd(a, b):
     return a
 
 
-def egcd(a, b):
+def egcd(a: int, b: int) -> (int, int, int):
     """
     扩展欧几里得算法
     返回 a、b 两数的最大公约数 g 同时，找到 x、y，使他们满足贝祖等式 ax + by = gcd(a, b)
@@ -24,26 +24,25 @@ def egcd(a, b):
         return g, x - (b // a) * y, y
 
 
-def mod_inv(a, m):
+def mod_inv(a: int, m: int) -> int:
     g, x, y = egcd(a, m)
     assert g == 1
     return x % m
 
 
 class GaussMatrix:
-    def __init__(self, matrix, mod):
-        self.matrix = copy.deepcopy(matrix)
-        self.d = None
-
-        self.r = len(matrix)
-        self.c = len(matrix[0])
-        self.N = len(matrix[0]) - 1
-        self.mod = mod
+    def __init__(self, m_matrix: list[list[int]], m_mod: int):
+        self.matrix: list[list[int]] = copy.deepcopy(m_matrix)
+        self.d: list[list[int]] = []
+        self.r = len(m_matrix)
+        self.c = len(m_matrix[0])
+        self.N = len(m_matrix[0]) - 1
+        self.mod = m_mod
         self.count = 1
         self.error_str = "unknown error"
 
-    def swap_row(self, ra, rb):
-        (self.d[ra], self.d[rb]) = (self.d[rb], self.d[ra])
+    def swap_row(self, row_a, row_b):
+        (self.d[row_a], self.d[row_b]) = (self.d[row_b], self.d[row_a])
 
     def swap_col(self, ca, cb):
         for j in range(self.r):
@@ -54,7 +53,7 @@ class GaussMatrix:
         a = self.d[n][n]
         m = self.mod
         k = gcd(a, m)
-        for j in xrange(n + 1, self.N):
+        for j in range(n + 1, self.N):
             b = (b - (self.d[n][j] * r[j] % m)) % m
 
         if 1 == k:
@@ -67,34 +66,34 @@ class GaussMatrix:
 
                 x0 = mod_inv(a, m) * b % m
                 x = []
-                for i in xrange(k):
+                for i in range(k):
                     x.append(x0 + m * i)
                 return x
         return None
 
     def find_min_gcd_row_col(self, i, j):
-        for k in xrange(i, self.r):
-            for l in xrange(j, self.c - 1):
+        for k in range(i, self.r):
+            for l in range(j, self.c - 1):
                 if 1 == gcd(self.d[k][l], self.mod):
                     return [k, l]
 
         def add_min_gcd(a, b, m):
-            r = [m, 1]
-            g = gcd(a, b)
-            if g:
-                i = a / g
-                for j in xrange(i):
-                    g = gcd((a + j * b) % m, m)
-                    if g < r[0]:
-                        r[0] = g
-                        r[1] = j
-                    if g == 1:
+            _r = [m, 1]
+            _g = gcd(a, b)
+            if _g:
+                _i = a / _g
+                for _j in range(int(_i)):
+                    _g = gcd((a + _j * b) % m, m)
+                    if _g < _r[0]:
+                        _r[0] = _g
+                        _r[1] = _j
+                    if _g == 1:
                         break
-            return r
+            return _r
 
         r = [self.mod, 1, i, i + 1, j]
-        for k in xrange(i, self.r):
-            for kk in xrange(k + 1, self.r):
+        for k in range(i, self.r):
+            for kk in range(k + 1, self.r):
                 for l in range(j, self.c - 1):
                     rr = add_min_gcd(self.d[k][l], self.d[kk][l], self.mod)
                     if rr[0] < r[0]:
@@ -113,7 +112,7 @@ class GaussMatrix:
         l = r[4]
 
         if n and g < self.mod:
-            self.d[k] = map(lambda x, y: (x + n * y) % self.mod, self.d[k], self.d[kk])
+            self.d[k] = list(map(lambda x, y: (x + n * y) % self.mod, self.d[k], self.d[kk]))
         return [k, l]
 
     def mul_row(self, i, k, j):
@@ -134,21 +133,21 @@ class GaussMatrix:
             if mul is None:
                 print_matrix(self.d)
                 assert (mul is not None)
-            self.d[i] = map(lambda x, y: (y - x * mul) % self.mod, self.d[k], self.d[i])
+            self.d[i] = list(map(lambda x, y: (y - x * mul) % self.mod, self.d[k], self.d[i]))
 
-    def gauss(self):
+    def guess(self):
         self.d = copy.deepcopy(self.matrix)
-        for i in xrange(self.r):
-            for j in xrange(self.c):
+        for i in range(self.r):
+            for j in range(self.c):
                 self.d[i][j] = self.matrix[i][j] % self.mod
 
         if self.r < self.N:
             self.d.extend([[0] * self.c] * (self.N - self.r))
 
-        index = [x for x in xrange(self.N)]
+        index = [x for x in range(self.N)]
         for i in range(self.N):
             tmp = self.find_min_gcd_row_col(i, i)
-            if (tmp):
+            if tmp:
                 self.swap_row(i, tmp[0])
                 (index[i], index[tmp[1]]) = (index[tmp[1]], index[i])
                 self.swap_col(i, tmp[1])
@@ -160,20 +159,20 @@ class GaussMatrix:
                 self.mul_row(k, i, i)
 
         if self.r > self.N:
-            for i in xrange(self.N, self.r):
-                for j in xrange(self.c):
+            for i in range(self.N, self.r):
+                for j in range(self.c):
                     if self.d[i][j]:
                         self.error_str = "r(A) != r(A~)"
                         return None
 
-        for i in xrange(self.N):
+        for i in range(self.N):
             self.count *= gcd(self.d[i][i], self.mod)
 
         if self.count > 100:
-            self.error_str = "solution too more:%d" % (self.count)
+            self.error_str = "solution too more:%d" % self.count
             return None
 
-        result = [[None] * self.N]
+        result: list[list[int]] = [[0] * self.N]
         for i in range(self.N - 1, -1, -1):
             new_result = []
             for r in result:
@@ -190,11 +189,11 @@ class GaussMatrix:
 
             result = new_result
 
-        for i in xrange(len(result)):
+        for i in range(len(result)):
             def xchg(a, b):
-                result[i][b] = a
+                result[i][b] = int(a)
 
-            map(xchg, result[i][:], index)
+            list(map(xchg, result[i][:], index))
 
         return result
 
@@ -204,7 +203,7 @@ class GaussMatrix:
 ################################################################################
 
 
-def print_array(x):
+def print_array(x: list[int]):
     prn = "\t["
     for j in x:
         if j:
@@ -212,25 +211,25 @@ def print_array(x):
         else:
             prn += "  0, "
 
-    print prn[:-2] + "],"
+    print(prn[:-2] + "],")
 
 
-def print_matrix(x):
-    print "["
+def print_matrix(x: list[list[int]]):
+    print("[")
     for i in x:
         print_array(i)
-    print "]"
+    print("]")
 
 
-def solve_matrix(mod, matrix):
-    g = GaussMatrix(matrix, mod)
-    ret = g.gauss()
+def solve_matrix(_mod: int, _matrix: list[list[int]]):
+    g = GaussMatrix(_matrix, _mod)
+    ret = g.guess()
     if not ret:
-        print "error:"
+        print("error:")
         print_matrix(g.d)
-        print "error_str:", g.error_str
+        print("error_str:", g.error_str)
     else:
-        print ret[0]
+        print(ret[0])
 
 
 if __name__ == "__main__":

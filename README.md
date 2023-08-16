@@ -6,7 +6,7 @@ A compass puzzle solver in HonKai: Star Rail.
 
 ## 环境
 
-- Python 2.7.18
+- Python 3.11
 
 ## 使用
 
