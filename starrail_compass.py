@@ -18,10 +18,10 @@ def egcd(a, b):
     返回 a、b 两数的最大公约数 g 同时，找到 x、y，使他们满足贝祖等式 ax + by = gcd(a, b)
     """
     if a == 0:
-        return (b, 0, 1)
+        return b, 0, 1
     else:
         g, y, x = egcd(b % a, a)
-        return (g, x - (b // a) * y, y)
+        return g, x - (b // a) * y, y
 
 
 def mod_inv(a, m):
@@ -75,7 +75,7 @@ class GaussMatrix:
     def find_min_gcd_row_col(self, i, j):
         for k in xrange(i, self.r):
             for l in xrange(j, self.c - 1):
-                if (1 == gcd(self.d[k][l], self.mod)):
+                if 1 == gcd(self.d[k][l], self.mod):
                     return [k, l]
 
         def add_min_gcd(a, b, m):
@@ -104,7 +104,7 @@ class GaussMatrix:
                         r[3] = kk
                         r[4] = l
                         pass
-                    if (1 == rr[0]):
+                    if 1 == rr[0]:
                         break
         g = r[0]
         n = r[1]
@@ -131,9 +131,9 @@ class GaussMatrix:
 
         if b:
             mul = get_mul(a, b, self.mod)
-            if None == mul:
+            if mul is None:
                 print_matrix(self.d)
-                assert (mul != None)
+                assert (mul is not None)
             self.d[i] = map(lambda x, y: (y - x * mul) % self.mod, self.d[k], self.d[i])
 
     def gauss(self):
@@ -222,7 +222,7 @@ def print_matrix(x):
     print "]"
 
 
-def run_test(mod, matrix):
+def solve_matrix(mod, matrix):
     g = GaussMatrix(matrix, mod)
     ret = g.gauss()
     if not ret:
@@ -240,4 +240,4 @@ if __name__ == "__main__":
         [-3, -3, 0, mod - 0],
         [0, 3, 3, mod - 0]
     ]
-    run_test(mod, matrix)
+    solve_matrix(mod, matrix)
