@@ -12,10 +12,12 @@ def gcd(a: int, b: int) -> int:
     return a
 
 
-def egcd(a: int, b: int) -> (int, int, int):
+def egcd(a: int, b: int) -> tuple[int, int, int]:
     """
     扩展欧几里得算法
     返回 a、b 两数的最大公约数 g 同时，找到 x、y，使他们满足贝祖等式 ax + by = gcd(a, b)
+
+    :returns g, x, y
     """
     if a == 0:
         return b, 0, 1
@@ -44,11 +46,11 @@ class GaussMatrix:
     def swap_row(self, row_a, row_b):
         (self.d[row_a], self.d[row_b]) = (self.d[row_b], self.d[row_a])
 
-    def swap_col(self, ca, cb):
+    def swap_col(self, column_a, column_b):
         for j in range(self.r):
-            (self.d[j][ca], self.d[j][cb]) = (self.d[j][cb], self.d[j][ca])
+            (self.d[j][column_a], self.d[j][column_b]) = (self.d[j][column_b], self.d[j][column_a])
 
-    def inv_result(self, r, n):
+    def inv_result(self, r, n) -> list[int] | None:
         b = self.d[n][self.N]
         a = self.d[n][n]
         m = self.mod
@@ -56,14 +58,13 @@ class GaussMatrix:
         for j in range(n + 1, self.N):
             b = (b - (self.d[n][j] * r[j] % m)) % m
 
-        if 1 == k:
+        if k == 1:
             return [mod_inv(a, m) * b % m]
         else:
             if k == gcd(k, b):
                 a /= k
                 b /= k
                 m /= k
-
                 x0 = mod_inv(a, m) * b % m
                 x = []
                 for i in range(k):
@@ -71,13 +72,13 @@ class GaussMatrix:
                 return x
         return None
 
-    def find_min_gcd_row_col(self, i, j):
+    def find_min_gcd_row_col(self, i, j) -> list[int]:
         for k in range(i, self.r):
-            for l in range(j, self.c - 1):
-                if 1 == gcd(self.d[k][l], self.mod):
-                    return [k, l]
+            for _l in range(j, self.c - 1):
+                if gcd(self.d[k][_l], self.mod) == 1:
+                    return [k, _l]
 
-        def add_min_gcd(a, b, m):
+        def add_min_gcd(a, b, m) -> list[int]:
             _r = [m, 1]
             _g = gcd(a, b)
             if _g:
@@ -94,14 +95,14 @@ class GaussMatrix:
         r = [self.mod, 1, i, i + 1, j]
         for k in range(i, self.r):
             for kk in range(k + 1, self.r):
-                for l in range(j, self.c - 1):
-                    rr = add_min_gcd(self.d[k][l], self.d[kk][l], self.mod)
+                for _l in range(j, self.c - 1):
+                    rr = add_min_gcd(self.d[k][_l], self.d[kk][_l], self.mod)
                     if rr[0] < r[0]:
                         r[0] = rr[0]
                         r[1] = rr[1]
                         r[2] = k
                         r[3] = kk
-                        r[4] = l
+                        r[4] = _l
                         pass
                     if 1 == rr[0]:
                         break
@@ -109,23 +110,23 @@ class GaussMatrix:
         n = r[1]
         k = r[2]
         kk = r[3]
-        l = r[4]
+        _l = r[4]
 
         if n and g < self.mod:
             self.d[k] = list(map(lambda x, y: (x + n * y) % self.mod, self.d[k], self.d[kk]))
-        return [k, l]
+        return [k, _l]
 
     def mul_row(self, i, k, j):
         a = self.d[k][j]
         b = self.d[i][j]
 
-        def get_mul(a, b, m):
-            k = gcd(a, m)
-            if 1 == k:
-                return mod_inv(a, m) * b % m
+        def get_mul(_a: int, _b: int, m: int) -> int | float | None:
+            _k = gcd(_a, m)
+            if _k == 1:
+                return mod_inv(_a, m) * _b % m
             else:
-                if k == gcd(k, b):
-                    return mod_inv(a / k, m / k) * (b / k) % (m / k)
+                if _k == gcd(_k, _b):
+                    return mod_inv(int(_a / _k), int(m / _k)) * (_b / _k) % (m / _k)
             return None
 
         if b:
@@ -173,18 +174,18 @@ class GaussMatrix:
             return None
 
         result: list[list[int]] = [[0] * self.N]
-        for i in range(self.N - 1, -1, -1):
+        for col in range(self.N - 1, -1, -1):  # reverse iterate
             new_result = []
-            for r in result:
-                ret = self.inv_result(r, i)
-                if ret:
-                    for rr in ret:
-                        l = r[:]
-                        l[i] = rr
-                        new_result.append(l)
+            for row in result:
+                inv_ret = self.inv_result(row, col)
+                if inv_ret:
+                    for column in inv_ret:
+                        copied_r = row[:]  # deep copy
+                        copied_r[col] = column
+                        new_result.append(copied_r)
 
                 else:
-                    self.error_str = "no inv:i=%d" % (i)
+                    self.error_str = "no inv:col=%d" % col
                     return None
 
             result = new_result
