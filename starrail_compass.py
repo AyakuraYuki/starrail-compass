@@ -67,7 +67,7 @@ class GaussMatrix:
                 m /= k
                 x0 = mod_inv(a, m) * b % m
                 x = []
-                for i in range(k):
+                for i in range(int(k)):
                     x.append(x0 + m * i)
                 return x
         return None
@@ -236,8 +236,8 @@ def solve_matrix(_mod: int, _matrix: list[list[int]]):
 if __name__ == "__main__":
     mod = 6
     matrix = [
-        [-1, 0, -1, mod - 4],
-        [-3, -3, 0, mod - 0],
-        [0, 3, 3, mod - 0]
+        [-1, 0, -1, mod - 2],
+        [-2, -2, 0, mod - 0],
+        [0, 2, 2, mod - 0]
     ]
     solve_matrix(mod, matrix)
